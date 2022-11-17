@@ -70,10 +70,10 @@ const SQLRepository = () => {
         .catch(handleUniqueUsernameError(user.username))
     )
 
-  const getByLoginData = (username, password) => knex
+  const getByLogin = (username, password) => knex
     .select('*')
     .from('users')
-    .where({username, password})
+    .where({username})
     .then(handleNotFoundError(username)
     .then(decodeUsers))
 
@@ -98,7 +98,7 @@ const SQLRepository = () => {
     list,
     get,
     insert,
-    getByLoginData,
+    getByLogin,
     update,
     del,
   }

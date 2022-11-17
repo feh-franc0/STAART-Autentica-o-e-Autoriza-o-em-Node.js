@@ -1,8 +1,11 @@
 const { Router } = require("express");
 const Joi = require("joi");
+const jwt = require("jsonwebtoken");
+const { jwt: jwtConfig } = require('../config')
 
 const withAsyncErrorHandler = require("../middlewares/async-error");
 const validate = require("../middlewares/validate");
+const { jwtAuth } = require("../middlewares/jwt-auth");
 const { encrypt } = require("../utils");
 
 const { UsersRepository } = require("./repository");
@@ -55,7 +58,7 @@ const UpdateUserSchema = {
     id: Joi.number().required(),
   }),
   body: Joi.object({
-    password: Joi.string().min(5).max(40),
+    password: Joi.string().min(5).max(255),
     firstName: Joi.string().regex(NameRegex),
     lastName: Joi.string().regex(NameRegex),
   }).or("password", "firstName", "lastName"),
@@ -73,6 +76,7 @@ const updateUser = async (req, res) => {
 router.put(
   "/:id",
   validate(UpdateUserSchema),
+  jwtAuth,
   withAsyncErrorHandler(updateUser)
 );
 
@@ -96,6 +100,7 @@ const deleteUser = async (req, res) => {
 router.delete(
   "/:id",
   validate(DeleteUserSchema),
+  jwtAuth,
   withAsyncErrorHandler(deleteUser)
 );
 
@@ -119,6 +124,38 @@ const getUser = async (req, res) => {
 };
 
 router.get("/", withAsyncErrorHandler(listUsers));
-router.get("/:id", validate(GetUserSchema), withAsyncErrorHandler(getUser));
+router.get("/:id", validate(GetUserSchema), jwtAuth, withAsyncErrorHandler(getUser));
+
+
+
+// ***********
+// ** login **
+// ***********
+
+const loginUserSchema = {
+  body: Joi.object({
+    username: Joi.string().email().required(),
+    password: Joi.string().min(5).max(255).required()
+  })
+}
+
+const loginUser = async( req, res ) => {
+  const { username, password } = req.body;
+  const { password: userPassword, ...user } = await repository.getByLogin(username)
+  if (!user) throw new AuthenticationError('Invalid Credetials')
+  
+  const encrypted = await encrypt(password)
+  const isValid = await safeCompare(encrypted, userPassword)
+  if (!isValid) throw new AuthenticationError('Invalid Credetials')
+
+  const token = jwt.sign(user, jwtConfig.secret, {
+    expiresIn: jwtConfig.expiration,
+    audience: jwtConfig.audience,
+    issuer: jwtConfig.issuer
+  })
+
+  res.status(200).send({ token })
+}
+router.post('/login', validate(loginUserSchema), withAsyncErrorHandler(loginUser))
 
 module.exports = router;
