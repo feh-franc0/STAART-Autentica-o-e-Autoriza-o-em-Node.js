@@ -5,17 +5,9 @@ class DomainError extends Error {
   }
 }
 
-class NotFoundError extends DomainError {
-  constructor({ resourceName, resourceId }) {
-    super(`Resource '${resourceName}' with identifier '${resourceId}' not found`)
-    this.resourceName = resourceName
-    this.resourceId = resourceId
-  }
-}
-
 class AuthenticationError extends DomainError {
   constructor (cause = 'not specified') {
-    super('The user could not be authenticated')
+    super(`The user could not be authenticated`)
     this.name = this.constructor.name
     this.cause = cause
   }
@@ -23,9 +15,16 @@ class AuthenticationError extends DomainError {
 
 class AuthorizationError extends DomainError {
   constructor (cause = 'not specified') {
-    super('The user is not authorized')
-    this.name = this.constructor.name
+    super(`The user is not authorized`)
     this.cause = cause
+  }
+}
+
+class NotFoundError extends DomainError {
+  constructor({ resourceName, resourceId }) {
+    super(`Resource '${resourceName}' with identifier '${resourceId}' not found`)
+    this.resourceName = resourceName
+    this.resourceId = resourceId
   }
 }
 
@@ -42,7 +41,7 @@ class ConflictError extends DomainError {
 module.exports = {
   NotFoundError,
   ValidationError,
-  ConflictError,
   AuthenticationError,
+  ConflictError,
   AuthorizationError,
 }

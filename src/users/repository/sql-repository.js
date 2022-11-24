@@ -59,6 +59,13 @@ const SQLRepository = () => {
       .then(handleNotFound(id))
       .then(decodeUser)
 
+  const getByLogin = (username) => knex
+    .select('*')
+    .from('users')
+    .where({ username })
+    .then(handleNotFound(username))
+    .then(decodeUser)
+
   const insert = (user) =>
     // mysql não tem suporte pra INSERT ... RETURNING <props>
     // (INSERT sempre retorna o id do registro criado)
@@ -69,13 +76,6 @@ const SQLRepository = () => {
         .then(([id]) => get(id, tx))
         .catch(handleUniqueUsernameError(user.username))
     )
-
-  const getByLogin = (username, password) => knex
-    .select('*')
-    .from('users')
-    .where({username})
-    .then(handleNotFoundError(username)
-    .then(decodeUsers))
 
   const update = user =>
     // mysql não tem suporte pra UPDATE ... RETURNING <props>
@@ -98,9 +98,9 @@ const SQLRepository = () => {
     list,
     get,
     insert,
-    getByLogin,
     update,
     del,
+    getByLogin
   }
 
 }

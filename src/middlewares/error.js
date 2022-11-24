@@ -4,6 +4,14 @@ const validationsToCause = validations =>
   validations.map(({ message, context: { label } }) => ({ message, field: label }))
 
 const responseMappers = {
+  UnauthorizedError: (error) => ({
+    status: 401,
+    body: {
+      statusCode: 401,
+      error: AuthenticationError.name,
+      message: error.message
+    }
+  }),
   [NotFoundError.name]: (error) => ({
     status: 404,
     body: {
@@ -11,6 +19,24 @@ const responseMappers = {
       error: NotFoundError.name,
       message: error.message,
       cause: [],
+    }
+  }),
+  [AuthenticationError.name]: (error) => ({
+    status: 401,
+    body: {
+      statusCode: 401,
+      error: AuthenticationError.name,
+      message: error.message,
+      cause: error.cause
+    }
+  }),
+  [AuthorizationError.name]: (error) => ({
+    status: 403,
+    body: {
+      statusCode: 403,
+      error: AuthorizationError.name,
+      message: error.message,
+      cause: error.cause
     }
   }),
   [ValidationError.name]: (error) => ({
@@ -30,33 +56,6 @@ const responseMappers = {
       message: error.message,
       cause: [],
     },
-  }),
-  [AuthenticationError.name]: (error) => ({
-    status: 401,
-    body: {
-      statusCode: 401,
-      error: AuthenticationError.name,
-      message: error.message,
-      cause: error.cause,
-    }
-  }),
-  [AuthorizationError.name]: (error) => ({
-    status: 403,
-    body: {
-      statusCode: 403,
-      error: AuthorizationError.name,
-      message: error.message,
-      cause: error.cause,
-    }
-  }),
-  UnauthorizedError: (error) => ({
-    status: 401,
-    body: {
-      statusCode: 401,
-      error: AuthenticationError.name,
-      message: error.message,
-      cause: 'Invalid Token',
-    }
   }),
   default: (error) => ({
     status: 500,

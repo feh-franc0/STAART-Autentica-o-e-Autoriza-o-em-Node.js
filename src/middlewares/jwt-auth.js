@@ -1,11 +1,11 @@
-const { expressjwt } = require("express-jwt");
-const { jwt } = require("../config");
+const { jwt: jwtConfig } = require('../config')
+const { expressjwt } = require('express-jwt')
 
 module.exports = {
   jwtAuth: expressjwt({
-    secret: jwt.secret,
-    audience: jwt.audience,
-    issuer: jwt.issuer,
-    algorithms: ["HS256"],
+    secret: jwtConfig.secret,
+    audience: jwtConfig.audience,
+    issuer: jwtConfig.issuer,
+    algorithms: ['HS256'],
   }),
-};
+}
